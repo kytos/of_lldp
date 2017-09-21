@@ -63,8 +63,8 @@ class Main(KytosNApp):
                               switch.dpid)
 
     @listen_to('kytos/of_core.v0x01.messages.in.ofpt_packet_in')
-    def update_links(self, event):
-        """Update interfaces when an PacketIn is received.
+    def notify_uplink_detected(self, event):
+        """Dispatch an KytosEvent to notify about a link between switches.
 
         Args:
             event (:class:`~kytos.core.events.KytosEvent`):
@@ -106,17 +106,18 @@ class Main(KytosNApp):
                 #: this packet is not useful for us and we may just ignore it.
                 return
 
-            port_no_a = event.message.in_port
             switch_a = event.source.switch
-            interface_a = get_interface(port_no_a, switch_a)
+            port_a = event.message.in_port
 
-            port_no_b = unpack_non_empty(UBInt16, lldp.port_id.sub_value)
             switch_b = self.controller.get_switch_by_dpid(dpid.value)
-            interface_b = get_interface(port_no_b, switch_b)
+            port_b = unpack_non_empty(UBInt16, lldp.port_id.sub_value)
 
-            if interface_a and interface_b:
-                interface_a.update_endpoint(interface_b)
-                interface_b.update_endpoint(interface_a)
+            name = 'diraol/of_lldp.switch.link'
+            content = {'switch_a': {'id': switch_a.id, 'port': port_a},
+                       'switch_b': {'id': switch_b.id, 'port': port_b}}
+
+            event_out = KytosEvent(name=name, content=content)
+            self.controller.buffers.app.put(event_out)
 
     def shutdown(self):
         """End of the application."""

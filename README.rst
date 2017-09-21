@@ -1,8 +1,8 @@
 Overview
 ========
 
-This NApp was based on [`kytos/of_lldp`](https://github.com/kytos/kytos-napps)
-NApp.
+This NApp was based on `kytos/of_lldp <https://github.com/kytos/kytos-napps>`_
+) NApp.
 
 The main differences between `kytos/of_lldp` and this NApp are:
   - This NApp does not modifies external objects, such as a switch. Instead of

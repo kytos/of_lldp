@@ -89,6 +89,10 @@ class Main(KytosNApp):
             switch_b = self.controller.get_switch_by_dpid(dpid.value)
             port_b = self.unpack_non_empty(UBInt16, lldp.port_id.sub_value)
 
+            # Return if any of the needed information are not available
+            if not (switch_a and port_a and switch_b and port_b):
+                return
+
             name = 'diraol/of_lldp.switch.link'
             content = {'switch_a': {'id': switch_a.id, 'port': port_a},
                        'switch_b': {'id': switch_b.id, 'port': port_b}}

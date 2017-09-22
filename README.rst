@@ -30,9 +30,21 @@ Events
 
 Listen
 ------
+`*kytos/of_core.v0x0[14].messages.in.ofpt_packet_in*`
+  Listen to any OpenFlow PacketIn in versions 1.0 (v0x01) or 1.3 (v0x04).
 
 Generate
 --------
+`*diraol/of_lldp.messages.out.ofpt_packet_out*`
+  Standard "message out" event with a PacketOut message to the switch
+  containing a LLDP packet inside it.
+
+`*diraol/of_lldp.switch.link*`
+  An event to notify those interest that a link between two switches was
+  identified. This does not mean that it is a new connection, it may be an
+  already known connection between two switches. This event contains an
+  attribute `content` with two dictionaries: `**switch_a**` and `**switch_b**`.
+  Each one of them contains two items: `**id**` and `port` (number).
 
 Advanced
 ========

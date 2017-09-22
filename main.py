@@ -71,34 +71,11 @@ class Main(KytosNApp):
                 Event with an LLDP packet as data.
 
         """
-        def unpack_non_empty(desired_class, data):
-            """Unpack data using an instance of desired_class.
-
-            Args:
-                desired_class (class): The class to be used to unpack data.
-                data (bytes): bytes to be unpacked.
-
-            Return:
-                An instance of desired_class class with data unpacked into it.
-
-            Raises:
-                UnpackException if the unpack could not be performed.
-
-            """
-            obj = desired_class()
-
-            if hasattr(data, 'value'):
-                data = data.value
-
-            obj.unpack(data)
-
-            return obj
-
-        ethernet = unpack_non_empty(Ethernet, event.message.data)
+        ethernet = self.unpack_non_empty(Ethernet, event.message.data)
         if ethernet.ether_type == EtherType.LLDP:
             try:
-                lldp = unpack_non_empty(LLDP, ethernet.data)
-                dpid = unpack_non_empty(DPID, lldp.chassis_id.sub_value)
+                lldp = self.unpack_non_empty(LLDP, ethernet.data)
+                dpid = self.unpack_non_empty(DPID, lldp.chassis_id.sub_value)
             except struct.error:
                 #: If we have a LLDP packet but we cannot unpack it, or the
                 #: unpacked packet does not contain the dpid attribute, then
@@ -110,7 +87,7 @@ class Main(KytosNApp):
             port_a = event.message.in_port
 
             switch_b = self.controller.get_switch_by_dpid(dpid.value)
-            port_b = unpack_non_empty(UBInt16, lldp.port_id.sub_value)
+            port_b = self.unpack_non_empty(UBInt16, lldp.port_id.sub_value)
 
             name = 'diraol/of_lldp.switch.link'
             content = {'switch_a': {'id': switch_a.id, 'port': port_a},
@@ -157,3 +134,27 @@ class Main(KytosNApp):
         packet_out.actions.append(output_action)
 
         return packet_out
+
+    @staticmethod
+    def unpack_non_empty(desired_class, data):
+        """Unpack data using an instance of desired_class.
+
+        Args:
+            desired_class (class): The class to be used to unpack data.
+            data (bytes): bytes to be unpacked.
+
+        Return:
+            An instance of desired_class class with data unpacked into it.
+
+        Raises:
+            UnpackException if the unpack could not be performed.
+
+        """
+        obj = desired_class()
+
+        if hasattr(data, 'value'):
+            data = data.value
+
+        obj.unpack(data)
+
+        return obj

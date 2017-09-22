@@ -62,7 +62,7 @@ class Main(KytosNApp):
                     log.debug("Sending a LLDP PacketOut to the switch %s",
                               switch.dpid)
 
-    @listen_to('kytos/of_core.v0x01.messages.in.ofpt_packet_in')
+    @listen_to('kytos/of_core.v0x0[14].messages.in.ofpt_packet_in')
     def notify_uplink_detected(self, event):
         """Dispatch an KytosEvent to notify about a link between switches.
 

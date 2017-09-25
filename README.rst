@@ -1,15 +1,7 @@
 Overview
 ========
 
-This NApp was based on `kytos/of_lldp <https://github.com/kytos/kytos-napps>`_
-NApp.
-
-The main differences between `kytos/of_lldp` and this NApp are:
-  - This NApp does not modifies external objects, such as a switch. Instead of
-    that it just dispatch a KytosEvent to notify about any needed information.
-  - This NApp work with all OpenFlow versions supported by python-openflow lib.
-
-The *of.lldp* application implements the Link Layer Discovery Protocol (LLDP).
+The *of_lldp* application implements the Link Layer Discovery Protocol (LLDP).
 This protocol is vendor free and used to discover network devices and all links
 between them. This protocol is implemented at layer 2 (L2) and defined in the
 IEEE 802.1ab. A network management system (NMS) can rapidly obtain the L2
@@ -23,7 +15,7 @@ repository. To install this NApp, run:
 
 .. code:: shell
 
-   $ kytos napps install diraol/of_lldp
+   $ kytos napps install kytos/of_lldp
 
 Events
 ======
@@ -36,13 +28,13 @@ kytos/of_core.v0x0[14].messages.in.ofpt_packet_in
 
 Generate
 --------
-diraol/of_lldp.messages.out.ofpt_packet_out
+kytos/of_lldp.messages.out.ofpt_packet_out
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   *buffer*: `message_out`
   Standard "message out" event with a PacketOut message to the switch
   containing a LLDP packet inside it.
 
-diraol/of_lldp.switch.link
+kytos/of_lldp.switch.link
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
   *buffer*: `app`
   An event to notify those interest that a link between two switches was

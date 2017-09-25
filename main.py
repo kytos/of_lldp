@@ -53,7 +53,7 @@ class Main(KytosNApp):
                                                         ethernet.pack())
 
                 if packet_out is not None:
-                    name = 'diraol/of_lldp.messages.out.ofpt_packet_out'
+                    name = 'kytos/of_lldp.messages.out.ofpt_packet_out'
                     content = {'destination': switch.connection,
                                'message': packet_out}
                     event_out = KytosEvent(name=name, content=content)
@@ -93,7 +93,7 @@ class Main(KytosNApp):
             if not (switch_a and port_a and switch_b and port_b):
                 return
 
-            name = 'diraol/of_lldp.switch.link'
+            name = 'kytos/of_lldp.switch.link'
             content = {'switch_a': {'id': switch_a.id, 'port': port_a},
                        'switch_b': {'id': switch_b.id, 'port': port_b}}
 

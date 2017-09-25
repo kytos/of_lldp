@@ -2,7 +2,7 @@ Overview
 ========
 
 This NApp was based on `kytos/of_lldp <https://github.com/kytos/kytos-napps>`_
-) NApp.
+NApp.
 
 The main differences between `kytos/of_lldp` and this NApp are:
   - This NApp does not modifies external objects, such as a switch. Instead of
@@ -30,16 +30,21 @@ Events
 
 Listen
 ------
-`*kytos/of_core.v0x0[14].messages.in.ofpt_packet_in*`
+kytos/of_core.v0x0[14].messages.in.ofpt_packet_in
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   Listen to any OpenFlow PacketIn in versions 1.0 (v0x01) or 1.3 (v0x04).
 
 Generate
 --------
-`*diraol/of_lldp.messages.out.ofpt_packet_out*`
+diraol/of_lldp.messages.out.ofpt_packet_out
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  *buffer*: `message_out`
   Standard "message out" event with a PacketOut message to the switch
   containing a LLDP packet inside it.
 
-`*diraol/of_lldp.switch.link*`
+diraol/of_lldp.switch.link
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+  *buffer*: `app`
   An event to notify those interest that a link between two switches was
   identified. This does not mean that it is a new connection, it may be an
   already known connection between two switches. This event contains an

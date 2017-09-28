@@ -6,8 +6,10 @@ from kytos.core.helpers import listen_to
 from pyof.foundation.basic_types import DPID, UBInt16, UBInt32
 from pyof.foundation.network_types import LLDP, Ethernet, EtherType
 from pyof.v0x01.common.action import ActionOutput as AO10
+from pyof.v0x01.common.phy_port import Port as Port10
 from pyof.v0x01.controller2switch.packet_out import PacketOut as PO10
 from pyof.v0x04.common.action import ActionOutput as AO13
+from pyof.v0x04.common.port import PortNo as Port13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
 
 from napps.kytos.of_lldp import constants, settings
@@ -29,18 +31,28 @@ class Main(KytosNApp):
             except AttributeError:
                 of_version = None
 
-            if not (switch.is_connected() and of_version in [0x01, 0x04]):
+            if not switch.is_connected():
                 continue
 
-            for interface in switch.interfaces.values():
+            if of_version == 0x01:
+                port_type = UBInt16
+                local_port = Port10.OFPP_LOCAL
+            elif of_version == 0x04:
+                port_type = UBInt32
+                local_port = Port13.OFPP_LOCAL
+            else:
+                # skip the current switch with unsupported OF version
+                continue
 
-                # Avoid ports with speed == 0
-                if interface.port_number == 65534:
+            interfaces = list(switch.interfaces.values())
+            for interface in interfaces:
+
+                # Avoid the interface that connects to the controller.
+                if interface.port_number == local_port:
                     continue
 
                 lldp = LLDP()
                 lldp.chassis_id.sub_value = DPID(switch.dpid)
-                port_type = UBInt16 if of_version == 0x01 else UBInt32
                 lldp.port_id.sub_value = port_type(interface.port_number)
 
                 ethernet = Ethernet()
@@ -62,6 +74,18 @@ class Main(KytosNApp):
 
                     log.debug("Sending a LLDP PacketOut to the switch %s",
                               switch.dpid)
+
+                    msg = '\n'
+                    msg += 'Switch: %s (%s)\n'
+                    msg += '  Interfaces: %s\n'
+                    msg += '  -- LLDP PacketOut --\n'
+                    msg += '  Ethernet: eth_type (%s) | src (%s) | dst (%s)\n'
+                    msg += '    LLDP: Switch (%s) | port (%s)'
+
+                    log.debug(msg, switch.connection.address, switch.dpid,
+                              switch.interfaces, ethernet.ether_type,
+                              ethernet.source, ethernet.destination,
+                              switch.dpid, interface.port_number)
 
     @listen_to('kytos/of_core.v0x0[14].messages.in.ofpt_packet_in')
     def notify_uplink_detected(self, event):

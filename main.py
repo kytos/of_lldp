@@ -10,7 +10,7 @@ from pyof.v0x01.controller2switch.packet_out import PacketOut as PO10
 from pyof.v0x04.common.action import ActionOutput as AO13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
 
-from . import constants, settings
+from napps.kytos.of_lldp import constants, settings
 
 
 class Main(KytosNApp):

@@ -3,14 +3,14 @@ import struct
 
 from kytos.core import KytosEvent, KytosNApp, log
 from kytos.core.helpers import listen_to
-from pyof.foundation.basic_types import DPID, UBInt16
+from pyof.foundation.basic_types import DPID, UBInt16, UBInt32
 from pyof.foundation.network_types import LLDP, Ethernet, EtherType
 from pyof.v0x01.common.action import ActionOutput as AO10
 from pyof.v0x01.controller2switch.packet_out import PacketOut as PO10
 from pyof.v0x04.common.action import ActionOutput as AO13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
 
-from . import constants, settings
+from napps.kytos.of_lldp import constants, settings
 
 
 class Main(KytosNApp):
@@ -40,7 +40,8 @@ class Main(KytosNApp):
 
                 lldp = LLDP()
                 lldp.chassis_id.sub_value = DPID(switch.dpid)
-                lldp.port_id.sub_value = interface.port_number
+                port_type = UBInt16 if of_version == 0x01 else UBInt32
+                lldp.port_id.sub_value = port_type(interface.port_number)
 
                 ethernet = Ethernet()
                 ethernet.ether_type = EtherType.LLDP
@@ -87,7 +88,9 @@ class Main(KytosNApp):
             port_a = event.message.in_port
 
             switch_b = self.controller.get_switch_by_dpid(dpid.value)
-            port_b = self.unpack_non_empty(UBInt16, lldp.port_id.sub_value)
+            of_version = switch_b.connection.protocol.version
+            port_type = UBInt16 if of_version == 0x01 else UBInt32
+            port_b = self.unpack_non_empty(port_type, lldp.port_id.sub_value)
 
             # Return if any of the needed information are not available
             if not (switch_a and port_a and switch_b and port_b):

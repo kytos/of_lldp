@@ -64,22 +64,22 @@ kytos/of_lldp.messages.out.ofpt_packet_out
 Standard "message out" event with a PacketOut message to the switch containing
 a LLDP packet inside it.
 
-kytos/of_lldp.link.is.nni
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+kytos/of_lldp.interface.is.nni
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 *buffer*: ``app``
 
-An event to notify those interest that a link between two switches was
-identified. This does not mean that it is a new connection, it may be an
-already known connection between two switches. This event contains an attribute
-`content` with two dictionaries: `**switch_a**` and `**switch_b**`. Each one of
-them contains two items: `**id**` and `port` (number).
+An event to notify those interested that an interface was identified as a NNI
+interface. This is possible due to the fact that a connection between two
+switches was identified. This does not mean that it is a new connection, it may
+be an already known connection between two switches. This event contains an
+attribute `switch` and another `port`, the first one contains the switch id and
+the second one the port number.
 
 The content of an event will have the following format:
 
 .. code-block:: python3
 
-   content = {'switch_a': {'id': switch_a.id, 'port': port_a},
-              'switch_b': {'id': switch_b.id, 'port': port_b}}
+   content = {'switch': switch.id, 'port': port_number}}
 
 Advanced
 ========

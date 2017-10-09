@@ -89,7 +89,7 @@ class Main(KytosNApp):
 
     @listen_to('kytos/of_core.v0x0[14].messages.in.ofpt_packet_in')
     def notify_uplink_detected(self, event):
-        """Dispatch an KytosEvent to notify about a link between switches.
+        """Dispatch two KytosEvents to notify identified NNI interfaces.
 
         Args:
             event (:class:`~kytos.core.events.KytosEvent`):
@@ -120,10 +120,12 @@ class Main(KytosNApp):
             if not (switch_a and port_a and switch_b and port_b):
                 return
 
-            name = 'kytos/of_lldp.link.is.nni'
-            content = {'switch_a': {'id': switch_a.id, 'port': port_a},
-                       'switch_b': {'id': switch_b.id, 'port': port_b}}
+            name = 'kytos/of_lldp.interface.is.nni'
+            content = {'switch': switch_a.id, 'port': port_a}
+            event_out = KytosEvent(name=name, content=content)
+            self.controller.buffers.app.put(event_out)
 
+            content = {'switch': switch_b.id, 'port': port_b}
             event_out = KytosEvent(name=name, content=content)
             self.controller.buffers.app.put(event_out)
 

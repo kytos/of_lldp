@@ -64,7 +64,7 @@ kytos/of_lldp.messages.out.ofpt_packet_out
 Standard "message out" event with a PacketOut message to the switch containing
 a LLDP packet inside it.
 
-kytos/of_lldp.switch.link
+kytos/of_lldp.link.is.nni
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 *buffer*: ``app``
 

@@ -61,9 +61,9 @@ class Main(KytosNApp):
                 ethernet.destination = constants.LLDP_MULTICAST_MAC
                 ethernet.data = lldp.pack()
 
-                packet_out = self.build_lldp_packet_out(of_version,
-                                                        interface.port_number,
-                                                        ethernet.pack())
+                packet_out = self._build_lldp_packet_out(of_version,
+                                                         interface.port_number,
+                                                         ethernet.pack())
 
                 if packet_out is not None:
                     name = 'kytos/of_lldp.messages.out.ofpt_packet_out'
@@ -96,11 +96,11 @@ class Main(KytosNApp):
                 Event with an LLDP packet as data.
 
         """
-        ethernet = self.unpack_non_empty(Ethernet, event.message.data)
+        ethernet = self._unpack_non_empty(Ethernet, event.message.data)
         if ethernet.ether_type == EtherType.LLDP:
             try:
-                lldp = self.unpack_non_empty(LLDP, ethernet.data)
-                dpid = self.unpack_non_empty(DPID, lldp.chassis_id.sub_value)
+                lldp = self._unpack_non_empty(LLDP, ethernet.data)
+                dpid = self._unpack_non_empty(DPID, lldp.chassis_id.sub_value)
             except struct.error:
                 #: If we have a LLDP packet but we cannot unpack it, or the
                 #: unpacked packet does not contain the dpid attribute, then
@@ -114,13 +114,13 @@ class Main(KytosNApp):
             switch_b = self.controller.get_switch_by_dpid(dpid.value)
             of_version = switch_b.connection.protocol.version
             port_type = UBInt16 if of_version == 0x01 else UBInt32
-            port_b = self.unpack_non_empty(port_type, lldp.port_id.sub_value)
+            port_b = self._unpack_non_empty(port_type, lldp.port_id.sub_value)
 
             # Return if any of the needed information are not available
             if not (switch_a and port_a and switch_b and port_b):
                 return
 
-            name = 'kytos/of_lldp.switch.link'
+            name = 'kytos/of_lldp.link.is.nni'
             content = {'switch_a': {'id': switch_a.id, 'port': port_a},
                        'switch_b': {'id': switch_b.id, 'port': port_b}}
 
@@ -132,7 +132,7 @@ class Main(KytosNApp):
         log.debug('Shutting down...')
 
     @staticmethod
-    def build_lldp_packet_out(version, port_number, data):
+    def _build_lldp_packet_out(version, port_number, data):
         """Build a LLDP PacketOut message.
 
         Args:
@@ -167,7 +167,7 @@ class Main(KytosNApp):
         return packet_out
 
     @staticmethod
-    def unpack_non_empty(desired_class, data):
+    def _unpack_non_empty(desired_class, data):
         """Unpack data using an instance of desired_class.
 
         Args:

@@ -2,10 +2,10 @@
   "author": "kytos",
   "username": "kytos",
   "name": "of_lldp",
-  "description": "Discover switches in the network using the LLDP protocol.",
+  "description": "Discover network-to-network interfaces (NNIs) using the LLDP protocol.",
   "version": "0.1.1",
   "napp_dependencies": ["kytos/of_core"],
   "license": "MIT",
   "url": "https://github.com/kytos/of_lldp.git",
-  "tags": ["openflow", "lldp","network"]
+  "tags": ["openflow", "lldp"," network"]
 }

@@ -2,7 +2,12 @@
 Overview
 ########
 
-The *of_lldp* application implements the Link Layer Discovery Protocol (LLDP).
+.. attention::
+
+    THIS NAPP IS STILL EXPERIMENTAL AND IT'S EVENTS, METHODS AND STRUCTURES MAY
+    CHANGE A LOT ON THE NEXT FEW DAYS/WEEKS, USE IT AT YOUR OWN DISCERNEMENT
+
+The *kytos/of_lldp* application implements the Link Layer Discovery Protocol (LLDP).
 
 ############
 How it Works
@@ -57,6 +62,16 @@ kytos/of_core.v0x0[14].messages.in.ofpt_packet_in
 =================================================
 Listen to any OpenFlow PacketIn in versions 1.0 (v0x01) or 1.3 (v0x04).
 
+Content
+-------
+
+.. code-block:: python3
+
+    { 'message': <object> # instance of python-openflow PacketIn message
+      'source': <object>, # instance of kytos.core.switch.Connection class
+    }
+
+********
 Generate
 ********
 
@@ -68,17 +83,18 @@ kytos/of_lldp.messages.out.ofpt_packet_out
 Standard "message out" event with a PacketOut message to the switch containing
 a LLDP packet inside it.
 
-kytos/of_lldp.messages.out.ofpt_flow_mod
-========================================
+Content
+-------
 
-*buffer*: ``message_out``
+.. code-block:: python3
 
-Standard "message out" event with a FlowMod message to the switch, installing a
-proactive flow which instructs the datapath to send LLDP packets to the
-controller.
+    { 'message': <object>, # instance of a python-openflow PacketOut message
+      'destination': <object> # instance of kytos.core.switch.Connection class
+    }
 
 kytos/of_lldp.interface.is.nni
 ==============================
+
 *buffer*: ``app``
 
 An event to notify those interested that an interface was identified as a NNI
@@ -90,9 +106,10 @@ contains the switch id and the second one the port number.
 
 Content
 -------
-
 The content of an event will have the following format:
 
 .. code-block:: python3
 
-   content = {'switch': switch.id, 'port': port_number}
+    { 'switch': <int> # switch ID
+      'port': <int> # port number
+    }

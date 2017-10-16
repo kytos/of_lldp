@@ -3,13 +3,19 @@ import struct
 
 from kytos.core import KytosEvent, KytosNApp, log
 from kytos.core.helpers import listen_to
+
 from pyof.foundation.basic_types import DPID, UBInt16, UBInt32
 from pyof.foundation.network_types import LLDP, Ethernet, EtherType
 from pyof.v0x01.common.action import ActionOutput as AO10
 from pyof.v0x01.common.phy_port import Port as Port10
+from pyof.v0x01.controller2switch.flow_mod import FlowMod as FM10
+from pyof.v0x01.controller2switch.flow_mod import FlowModCommand as FMC
 from pyof.v0x01.controller2switch.packet_out import PacketOut as PO10
 from pyof.v0x04.common.action import ActionOutput as AO13
+from pyof.v0x04.common.flow_instructions import InstructionApplyAction
+from pyof.v0x04.common.flow_match import OxmOfbMatchField, OxmTLV
 from pyof.v0x04.common.port import PortNo as Port13
+from pyof.v0x04.controller2switch.flow_mod import FlowMod as FM13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
 
 from napps.kytos.of_lldp import constants, settings
@@ -19,7 +25,7 @@ class Main(KytosNApp):
     """Main OF_LLDP NApp Class."""
 
     def setup(self):
-        """Initial setup this NApp to run in a loop."""
+        """Make this NApp run in a loop."""
         self.execute_as_loop(settings.POLLING_TIME)
 
     def execute(self):
@@ -86,6 +92,32 @@ class Main(KytosNApp):
                               switch.interfaces, ethernet.ether_type,
                               ethernet.source, ethernet.destination,
                               switch.dpid, interface.port_number)
+
+    @listen_to('kytos/core.switches.new')
+    def install_lldp_flow(self, event):
+        """Install a flow to send LLDP packets to the controller.
+
+        The proactive flow is installed whenever a switch connects.
+
+        Args:
+            event (:class:`~kytos.core.events.KytosEvent`):
+                Event with new switch information.
+
+        """
+        try:
+            of_version = event.content['switch'].connection.protocol.version
+        except AttributeError:
+            of_version = None
+
+        flow_mod = self._build_lldp_flow_mod(of_version)
+
+        if flow_mod:
+            name = 'kytos/of_lldp.messages.out.ofpt_flow_mod'
+            content = {'destination': event.content['switch'].connection,
+                       'message': flow_mod}
+
+            event_out = KytosEvent(name=name, content=content)
+            self.controller.buffers.msg_out.put(event_out)
 
     @listen_to('kytos/of_core.v0x0[14].messages.in.ofpt_packet_in')
     def notify_uplink_detected(self, event):
@@ -167,6 +199,45 @@ class Main(KytosNApp):
         packet_out.actions.append(output_action)
 
         return packet_out
+
+    @staticmethod
+    def _build_lldp_flow_mod(version):
+        """Build a FlodMod message to send LLDP to the controller.
+
+        Args:
+            version (int): OpenFlow version.
+
+        Returns:
+            FlowMod message for the specific given OpenFlow version, if it is
+                supported.
+            None if the OpenFlow version is not supported.
+
+        """
+        if version == 0x01:
+            flow_mod = FM10()
+            flow_mod.command = FMC.OFPFC_ADD
+            flow_mod.priority = settings.FLOW_PRIORITY
+            flow_mod.match.dl_type = EtherType.LLDP
+            flow_mod.actions.append(AO10(port=Port10.OFPP_CONTROLLER))
+
+        elif version == 0x04:
+            flow_mod = FM13()
+            flow_mod.command = FMC.OFPFC_ADD
+            flow_mod.priority = settings.FLOW_PRIORITY
+
+            match_lldp = OxmTLV()
+            match_lldp.oxm_field = OxmOfbMatchField.OFPXMT_OFB_ETH_TYPE
+            match_lldp.oxm_value = EtherType.LLDP.to_bytes(2, 'big')
+            flow_mod.match.oxm_match_fields.append(match_lldp)
+
+            instruction = InstructionApplyAction()
+            instruction.actions.append(AO13(port=Port13.OFPP_CONTROLLER))
+            flow_mod.instructions.append(instruction)
+
+        else:
+            flow_mod = None
+
+        return flow_mod
 
     @staticmethod
     def _unpack_non_empty(desired_class, data):

@@ -113,3 +113,11 @@ The content of an event will have the following format:
     { 'switch': <int> # switch ID
       'port': <int> # port number
     }
+
+########
+Rest API
+########
+
+You can find a list of the available endpoints and example input/output in the
+'REST API' tab in this NApp's webpage in the `Kytos NApps Server
+<https://napps.kytos.io/kytos/of_lldp>`_.

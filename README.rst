@@ -97,11 +97,12 @@ kytos/of_lldp.interface.is.nni
 
 *buffer*: ``app``
 
-An event to notify those interested that an interface was identified as a NNI
-(network-to-network interface). This is possible due to the fact that
-a connection between two switches was identified. This does not mean that it is
-a new connection, it may be an already known connection between two switches.
-This event contains an attribute `switch` and another `port`, the first one
+An evento to notify that a link between two network-to-network interfaces
+(NNIs) was identified. This identification is possible due to the fact that a
+connection between two switches was identified. This does not mean that it is a
+new connection, it may be an already known connection between two switches.
+This event contains two attributes, `interface_a` and `interface_b`, and each
+one of them contains an attribute `switch` and another `port`, the first one
 contains the switch id and the second one the port number.
 
 Content
@@ -110,8 +111,15 @@ The content of an event will have the following format:
 
 .. code-block:: python3
 
-    { 'switch': <int> # switch ID
-      'port': <int> # port number
+    {
+      'interface_a': {
+        'switch': <int> # switch ID
+        'port': <int> # port number
+      },
+      'interface_b': {
+        'switch': <int> # switch ID
+        'port': <int> # port number
+      }
     }
 
 ########

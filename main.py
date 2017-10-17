@@ -153,11 +153,11 @@ class Main(KytosNApp):
                 return
 
             name = 'kytos/of_lldp.interface.is.nni'
-            content = {'switch': switch_a.id, 'port': port_a.value}
-            event_out = KytosEvent(name=name, content=content)
-            self.controller.buffers.app.put(event_out)
+            content = {
+                'interface_a': {'switch': switch_a.id, 'port': port_a.value},
+                'interface_b': {'switch': switch_b.id, 'port': port_b.value}
+            }
 
-            content = {'switch': switch_b.id, 'port': port_b.value}
             event_out = KytosEvent(name=name, content=content)
             self.controller.buffers.app.put(event_out)
 

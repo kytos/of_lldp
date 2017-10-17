@@ -93,7 +93,7 @@ class Main(KytosNApp):
                               ethernet.source, ethernet.destination,
                               switch.dpid, interface.port_number)
 
-    @listen_to('kytos/core.switches.new')
+    @listen_to('kytos/core.switch.new')
     def install_lldp_flow(self, event):
         """Install a flow to send LLDP packets to the controller.
 

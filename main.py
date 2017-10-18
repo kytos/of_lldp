@@ -152,10 +152,13 @@ class Main(KytosNApp):
             if not (switch_a and port_a and switch_b and port_b):
                 return
 
+            interface_a = switch_a.get_interface_by_port_no(port_a.value)
+            interface_b = switch_b.get_interface_by_port_no(port_b.value)
+
             name = 'kytos/of_lldp.interface.is.nni'
             content = {
-                'interface_a': {'switch': switch_a.id, 'port': port_a.value},
-                'interface_b': {'switch': switch_b.id, 'port': port_b.value}
+                'interface_a': interface_a,
+                'interface_b': interface_b
             }
 
             event_out = KytosEvent(name=name, content=content)

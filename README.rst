@@ -112,15 +112,10 @@ The content of an event will have the following format:
 .. code-block:: python3
 
     {
-      'interface_a': {
-        'switch': <int> # switch ID
-        'port': <int> # port number
-      },
-      'interface_b': {
-        'switch': <int> # switch ID
-        'port': <int> # port number
-      }
+      'interface_a': <interface_a>, # Object instance of Interface
+      'interface_b': <interface_b>
     }
+
 
 ########
 Rest API

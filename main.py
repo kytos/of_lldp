@@ -143,6 +143,10 @@ class Main(KytosNApp):
             switch_a = event.source.switch
             port_a = event.message.in_port
 
+            # in_port is currently a UBInt16 in v0x01 and an Int in v0x04.
+            if type(port_a) == int:
+                port_a = UBInt32(port_a)
+
             switch_b = self.controller.get_switch_by_dpid(dpid.value)
             of_version = switch_b.connection.protocol.version
             port_type = UBInt16 if of_version == 0x01 else UBInt32

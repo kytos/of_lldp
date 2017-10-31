@@ -13,7 +13,7 @@ from pyof.v0x01.controller2switch.flow_mod import FlowModCommand as FMC
 from pyof.v0x01.controller2switch.packet_out import PacketOut as PO10
 from pyof.v0x04.common.action import ActionOutput as AO13
 from pyof.v0x04.common.flow_instructions import InstructionApplyAction
-from pyof.v0x04.common.flow_match import OxmOfbMatchField, OxmTLV
+from pyof.v0x04.common.flow_match import OxmOfbMatchField, OxmTLV, VlanId
 from pyof.v0x04.common.port import PortNo as Port13
 from pyof.v0x04.controller2switch.flow_mod import FlowMod as FM13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
@@ -26,6 +26,9 @@ class Main(KytosNApp):
 
     def setup(self):
         """Make this NApp run in a loop."""
+        self.vlan_id = None
+        if hasattr(settings, "FLOW_VLAN_VID"):
+            self.vlan_id = settings.FLOW_VLAN_VID
         self.execute_as_loop(settings.POLLING_TIME)
 
     def execute(self):
@@ -66,6 +69,8 @@ class Main(KytosNApp):
                 ethernet.source = interface.address
                 ethernet.destination = constants.LLDP_MULTICAST_MAC
                 ethernet.data = lldp.pack()
+                # self.vlan_id == None will result in a packet with no VLAN.
+                ethernet.vlan.vid = self.vlan_id
 
                 packet_out = self._build_lldp_packet_out(of_version,
                                                          interface.port_number,
@@ -207,8 +212,7 @@ class Main(KytosNApp):
 
         return packet_out
 
-    @staticmethod
-    def _build_lldp_flow_mod(version):
+    def _build_lldp_flow_mod(self, version):
         """Build a FlodMod message to send LLDP to the controller.
 
         Args:
@@ -225,6 +229,8 @@ class Main(KytosNApp):
             flow_mod.command = FMC.OFPFC_ADD
             flow_mod.priority = settings.FLOW_PRIORITY
             flow_mod.match.dl_type = EtherType.LLDP
+            if self.vlan_id:
+                flow_mod.match.dl_vlan = self.vlan_id
             flow_mod.actions.append(AO10(port=Port10.OFPP_CONTROLLER))
 
         elif version == 0x04:
@@ -236,6 +242,13 @@ class Main(KytosNApp):
             match_lldp.oxm_field = OxmOfbMatchField.OFPXMT_OFB_ETH_TYPE
             match_lldp.oxm_value = EtherType.LLDP.to_bytes(2, 'big')
             flow_mod.match.oxm_match_fields.append(match_lldp)
+
+            if self.vlan_id:
+                match_vlan = OxmTLV()
+                match_vlan.oxm_field = OxmOfbMatchField.OFPXMT_OFB_VLAN_VID
+                vlan_value = self.vlan_id | VlanId.OFPVID_PRESENT
+                match_vlan.oxm_value = vlan_value.to_bytes(2, 'big')
+                flow_mod.match.oxm_match_fields.append(match_vlan)
 
             instruction = InstructionApplyAction()
             instruction.actions.append(AO13(port=Port13.OFPP_CONTROLLER))

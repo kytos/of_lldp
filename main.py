@@ -147,15 +147,21 @@ class Main(KytosNApp):
 
             switch_a = event.source.switch
             port_a = event.message.in_port
+            switch_b = None
+            port_b = None
 
             # in_port is currently a UBInt16 in v0x01 and an Int in v0x04.
             if type(port_a) == int:
                 port_a = UBInt32(port_a)
 
-            switch_b = self.controller.get_switch_by_dpid(dpid.value)
-            of_version = switch_b.connection.protocol.version
-            port_type = UBInt16 if of_version == 0x01 else UBInt32
-            port_b = self._unpack_non_empty(port_type, lldp.port_id.sub_value)
+            try:
+                switch_b = self.controller.get_switch_by_dpid(dpid.value)
+                of_version = switch_b.connection.protocol.version
+                port_type = UBInt16 if of_version == 0x01 else UBInt32
+                port_b = self._unpack_non_empty(port_type,
+                                                lldp.port_id.sub_value)
+            except AttributeError:
+                log.debug("Couldn't find datapath %s.", dpid.value)
 
             # Return if any of the needed information are not available
             if not (switch_a and port_a and switch_b and port_b):

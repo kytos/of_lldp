@@ -5,7 +5,7 @@ from kytos.core import KytosEvent, KytosNApp, log
 from kytos.core.helpers import listen_to
 
 from pyof.foundation.basic_types import DPID, UBInt16, UBInt32
-from pyof.foundation.network_types import LLDP, Ethernet, EtherType
+from pyof.foundation.network_types import LLDP, Ethernet, EtherType, VLAN
 from pyof.v0x01.common.action import ActionOutput as AO10
 from pyof.v0x01.common.phy_port import Port as Port10
 from pyof.v0x01.controller2switch.flow_mod import FlowMod as FM10
@@ -70,7 +70,7 @@ class Main(KytosNApp):
                 ethernet.destination = constants.LLDP_MULTICAST_MAC
                 ethernet.data = lldp.pack()
                 # self.vlan_id == None will result in a packet with no VLAN.
-                ethernet.vlan.vid = self.vlan_id
+                ethernet.vlans.append(VLAN(vid=self.vlan_id))
 
                 packet_out = self._build_lldp_packet_out(of_version,
                                                          interface.port_number,

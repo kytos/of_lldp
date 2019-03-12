@@ -1,11 +1,8 @@
 """NApp responsible to discover new switches and hosts."""
 import struct
 
-from kytos.core import KytosEvent, KytosNApp, log
-from kytos.core.helpers import listen_to
-
 from pyof.foundation.basic_types import DPID, UBInt16, UBInt32
-from pyof.foundation.network_types import LLDP, Ethernet, EtherType, VLAN
+from pyof.foundation.network_types import LLDP, VLAN, Ethernet, EtherType
 from pyof.v0x01.common.action import ActionOutput as AO10
 from pyof.v0x01.common.phy_port import Port as Port10
 from pyof.v0x01.controller2switch.flow_mod import FlowMod as FM10
@@ -18,6 +15,8 @@ from pyof.v0x04.common.port import PortNo as Port13
 from pyof.v0x04.controller2switch.flow_mod import FlowMod as FM13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
 
+from kytos.core import KytosEvent, KytosNApp, log
+from kytos.core.helpers import listen_to
 from napps.kytos.of_lldp import constants, settings
 
 
@@ -77,10 +76,10 @@ class Main(KytosNApp):
                                                          ethernet.pack())
 
                 if packet_out is not None:
-                    name = 'kytos/of_lldp.messages.out.ofpt_packet_out'
-                    content = {'destination': switch.connection,
-                               'message': packet_out}
-                    event_out = KytosEvent(name=name, content=content)
+                    event_out = KytosEvent(
+                        name='kytos/of_lldp.messages.out.ofpt_packet_out',
+                        content={'destination': switch.connection,
+                                 'message': packet_out})
                     self.controller.buffers.msg_out.put(event_out)
 
                     log.debug("Sending a LLDP PacketOut to the switch %s",
@@ -151,7 +150,7 @@ class Main(KytosNApp):
             port_b = None
 
             # in_port is currently a UBInt16 in v0x01 and an Int in v0x04.
-            if type(port_a) == int:
+            if isinstance(port_a, int):
                 port_a = UBInt32(port_a)
 
             try:
@@ -170,13 +169,9 @@ class Main(KytosNApp):
             interface_a = switch_a.get_interface_by_port_no(port_a.value)
             interface_b = switch_b.get_interface_by_port_no(port_b.value)
 
-            name = 'kytos/of_lldp.interface.is.nni'
-            content = {
-                'interface_a': interface_a,
-                'interface_b': interface_b
-            }
-
-            event_out = KytosEvent(name=name, content=content)
+            event_out = KytosEvent(name='kytos/of_lldp.interface.is.nni',
+                                   content={'interface_a': interface_a,
+                                            'interface_b': interface_b})
             self.controller.buffers.app.put(event_out)
 
     def shutdown(self):

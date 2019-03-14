@@ -10,6 +10,7 @@ Added
 
 Changed
 =======
+ - Updated Scrutinizer configuration.
 
 Deprecated
 ==========
@@ -19,6 +20,7 @@ Removed
 
 Fixed
 =====
+ - Fixed some linter issues.
 
 Security
 ========

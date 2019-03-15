@@ -7,6 +7,7 @@ All notable changes to the of_lldp NApp will be documented in this file.
 ********************************
 Added
 =====
+ - Continuum integration enabled at scrutinizer.
 
 Changed
 =======
@@ -19,6 +20,7 @@ Removed
 
 Fixed
 =====
+ - Fixed some linter issues.
 
 Security
 ========

@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  version: '0.1.2'
+  title: of_lldp
+  description: Discover network-to-network interfaces (NNIs) using the LLDP protocol.
+servers:
+  - url: http://localhost:8181/api/kytos/of_lldp
+    description: Local server.
+paths:
+  /v1/interfaces/:
+    get:
+      summary: List interfaces available to receive the LLDP packet.
+      description: List interfaces available to receive the LLDP packet.
+      operationId: list_interfaces
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lista'
+                example:           # Child of media type because we use $ref above
+                  # Properties of a referenced object
+                  interfaces: ["00:00:00:00:00:00:00:04:65534","00:00:00:00:00:00:00:03:65534"]
+  
+  
+  /v1/interfaces/enable/:
+    post:
+      summary: Enable interfaces to receive lldp packet.
+      description: Enable interfaces to receive lldp packet.
+      operationId: enable_lldp
+      requestBody:
+        description: Enable interfaces
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lista'
+            example:           # Child of media type because we use $ref above
+                # Properties of a referenced object
+                interfaces: ["00:00:00:00:00:00:00:04:65534","00:00:00:00:00:00:00:03:65534"]
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Lista'
+          '400':
+            description: No interfaces were found.
+  
+  /v1/interfaces/disable/:
+    post:
+      summary: Disable Interfaces
+      description: Disable interfaces
+      operationId: disable_lldp
+      requestBody:
+        description: Disable interfaces
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Lista'
+            example:           # Child of media type because we use $ref above
+                # Properties of a referenced object
+                interfaces: ["00:00:00:00:00:00:00:04:65534","00:00:00:00:00:00:00:03:65534"]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lista'
+        '400':
+          description: Some interfaces have not been disabled.
+components:
+  schemas:
+    Lista:
+      type: object
+      properties:
+        interface:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lista'
+   

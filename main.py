@@ -1,6 +1,7 @@
 """NApp responsible to discover new switches and hosts."""
 import struct
 
+from flask import jsonify, request
 from pyof.foundation.basic_types import DPID, UBInt16, UBInt32
 from pyof.foundation.network_types import LLDP, VLAN, Ethernet, EtherType
 from pyof.v0x01.common.action import ActionOutput as AO10
@@ -15,7 +16,7 @@ from pyof.v0x04.common.port import PortNo as Port13
 from pyof.v0x04.controller2switch.flow_mod import FlowMod as FM13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
 
-from kytos.core import KytosEvent, KytosNApp, log
+from kytos.core import KytosEvent, KytosNApp, log, rest
 from kytos.core.helpers import listen_to
 from napps.kytos.of_lldp import constants, settings
 
@@ -54,7 +55,9 @@ class Main(KytosNApp):
 
             interfaces = list(switch.interfaces.values())
             for interface in interfaces:
-
+                # Interface marked to receive lldp packet
+                if not interface.lldp:
+                    continue
                 # Avoid the interface that connects to the controller.
                 if interface.port_number == local_port:
                     continue
@@ -71,31 +74,37 @@ class Main(KytosNApp):
                 # self.vlan_id == None will result in a packet with no VLAN.
                 ethernet.vlans.append(VLAN(vid=self.vlan_id))
 
-                packet_out = self._build_lldp_packet_out(of_version,
-                                                         interface.port_number,
-                                                         ethernet.pack())
+                packet_out = self._build_lldp_packet_out(
+                                    of_version,
+                                    interface.port_number, ethernet.pack())
 
-                if packet_out is not None:
-                    event_out = KytosEvent(
-                        name='kytos/of_lldp.messages.out.ofpt_packet_out',
-                        content={'destination': switch.connection,
-                                 'message': packet_out})
-                    self.controller.buffers.msg_out.put(event_out)
+                if packet_out is None:
+                    continue
 
-                    log.debug("Sending a LLDP PacketOut to the switch %s",
-                              switch.dpid)
+                event_out = KytosEvent(
+                    name='kytos/of_lldp.messages.out.ofpt_packet_out',
+                    content={
+                            'destination': switch.connection,
+                            'message': packet_out})
+                self.controller.buffers.msg_out.put(event_out)
+                log.debug(
+                    "Sending a LLDP PacketOut to the switch %s",
+                    switch.dpid)
 
-                    msg = '\n'
-                    msg += 'Switch: %s (%s)\n'
-                    msg += '  Interfaces: %s\n'
-                    msg += '  -- LLDP PacketOut --\n'
-                    msg += '  Ethernet: eth_type (%s) | src (%s) | dst (%s)\n'
-                    msg += '    LLDP: Switch (%s) | port (%s)'
+                msg = '\n'
+                msg += 'Switch: %s (%s)\n'
+                msg += ' Interfaces: %s\n'
+                msg += ' -- LLDP PacketOut --\n'
+                msg += ' Ethernet: eth_type (%s) | src (%s) | dst (%s)'
+                msg += '\n'
+                msg += ' LLDP: Switch (%s) | port (%s)'
 
-                    log.debug(msg, switch.connection.address, switch.dpid,
-                              switch.interfaces, ethernet.ether_type,
-                              ethernet.source, ethernet.destination,
-                              switch.dpid, interface.port_number)
+                log.debug(
+                    msg,
+                    switch.connection.address, switch.dpid,
+                    switch.interfaces, ethernet.ether_type,
+                    ethernet.source, ethernet.destination,
+                    switch.dpid, interface.port_number)
 
     @listen_to('kytos/of_core.handshake.completed')
     def install_lldp_flow(self, event):
@@ -283,3 +292,80 @@ class Main(KytosNApp):
         obj.unpack(data)
 
         return obj
+
+    @staticmethod
+    def _get_data(req):
+        """Get request data."""
+        data = req.get_json()  # Valid format { "interfaces": [...] }
+        return data.get('interfaces', [])
+
+    def _get_interfaces(self):
+        """Get all interfaces."""
+        interfaces = []
+        for switch in list(self.controller.switches.values()):
+            interfaces += list(switch.interfaces.values())
+        return interfaces
+
+    @staticmethod
+    def _get_interfaces_dict(interfaces):
+        """Return a dict of interfaces."""
+        return {inter.id: inter for inter in interfaces}
+
+    def _get_lldp_interfaces(self):
+        """Get interfaces enabled to receive LLDP packets."""
+        return [inter.id for inter in self._get_interfaces() if inter.lldp]
+
+    @rest('v1/interfaces', methods=['GET'])
+    def get_lldp_interfaces(self):
+        """Return all the interfaces that have LLDP traffic enabled."""
+        return jsonify({"interfaces": self._get_lldp_interfaces()}), 200
+
+    @rest('v1/interfaces/disable', methods=['POST'])
+    def disable_lldp(self):
+        """Disables an interface to receive LLDP packets."""
+        interface_ids = self._get_data(request)
+        error_list = []  # List of interfaces that were not activated.
+        interface_ids = filter(None, interface_ids)
+        interfaces = self._get_interfaces()
+        if not interfaces:
+            return jsonify("No interfaces were found."), 404
+        interfaces = self._get_interfaces_dict(interfaces)
+        for id_ in interface_ids:
+            interface = interfaces.get(id_)
+            if interface:
+                interface.lldp = False
+            else:
+                error_list.append(id_)
+        if not error_list:
+            return jsonify(
+                "All the requested interfaces have been disabled."), 200
+
+        # Return a list of interfaces that couldn't be disabled
+        msg_error = "Some interfaces couldn't be found and deactivated: "
+        return jsonify({msg_error:
+                        error_list}), 400
+
+    @rest('v1/interfaces/enable', methods=['POST'])
+    def enable_lldp(self):
+        """Enable an interface to receive LLDP packets."""
+        interface_ids = self._get_data(request)
+        error_list = []  # List of interfaces that were not activated.
+        interface_ids = filter(None, interface_ids)
+        interfaces = self._get_interfaces()
+        if not interfaces:
+            return jsonify("No interfaces were found."), 404
+        interfaces = self._get_interfaces_dict(interfaces)
+        for id_ in interface_ids:
+            interface = interfaces.get(id_)
+            if interface:
+                interface.lldp = True
+            else:
+                error_list.append(id_)
+        if not error_list:
+            return jsonify(
+                "All the requested interfaces have been enabled."), 200
+
+        # Return a list of interfaces that couldn't be enabled
+        msg_error = "Some interfaces couldn't be found and activated: "
+        return jsonify({msg_error:
+                        error_list}), 400

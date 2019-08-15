@@ -75,6 +75,45 @@ paths:
                 $ref: '#/components/schemas/Lista'
         '400':
           description: Some interfaces have not been disabled.
+
+  /v1/time/:
+    get:
+      summary: Get LLDP Polling time.
+      description: Get LLDP Polling time in seconds.
+      operationId: time_lldp
+      
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Lista'
+                example: {"Polling time in seconds": 3}
+
+  /v1/time/{time_sec}:
+    post:
+      summary: Set the LLDP polling time.
+      description: Update LLDP polling time.
+      operationId: set_time_lldp
+      parameters:
+        - name: time_sec
+          in: path
+          required: true
+          schema:
+            type: string
+            example:  5
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lista'
+              example: 'Polling time has been updated.'
+        '400':
+          description: Bad format.
+
 components:
   schemas:
     Lista:

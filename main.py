@@ -27,9 +27,10 @@ class Main(KytosNApp):
     def setup(self):
         """Make this NApp run in a loop."""
         self.vlan_id = None
+        self.polling_time = settings.POLLING_TIME
         if hasattr(settings, "FLOW_VLAN_VID"):
             self.vlan_id = settings.FLOW_VLAN_VID
-        self.execute_as_loop(settings.POLLING_TIME)
+        self.execute_as_loop(self.polling_time)
 
     def execute(self):
         """Send LLDP Packets every 'POLLING_TIME' seconds to all switches."""
@@ -371,3 +372,20 @@ class Main(KytosNApp):
         msg_error = "Some interfaces couldn't be found and activated: "
         return jsonify({msg_error:
                         error_list}), 400
+
+    @rest('v1/time', methods=['GET'])
+    def get_time(self):
+        """Get LLDP polling time."""
+        return jsonify({"Polling time in seconds": self.polling_time}), 200
+
+    @rest('v1/time/<time_sec>', methods=['POST'])
+    def set_time(self, time_sec):
+        """Set LLDP polling time."""
+        # pylint: disable=attribute-defined-outside-init
+
+        try:
+            self.polling_time = int(time_sec)
+            self.execute_as_loop(self.polling_time)
+            return jsonify("Polling time has been updated."), 200
+        except ValueError:
+            return jsonify("Bad format."), 400

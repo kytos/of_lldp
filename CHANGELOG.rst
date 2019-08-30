@@ -23,6 +23,12 @@ Fixed
 Security
 ========
 
+[0.1.3] - 2019-08-30
+********************
+Added
+=====
+ - Added REST API to choose interfaces for sending LLDP packets.
+
 [0.1.2] - 2019-03-15
 ********************
 Added

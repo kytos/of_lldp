@@ -10,6 +10,7 @@ Added
 
 Changed
 =======
+- Changed README.rst to include some info badges.
 
 Deprecated
 ==========
@@ -19,6 +20,7 @@ Removed
 
 Fixed
 =====
+- Fixed Scrutinizer coverage error.
 
 Security
 ========

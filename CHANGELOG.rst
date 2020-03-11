@@ -10,7 +10,6 @@ Added
 
 Changed
 =======
-- Changed README.rst to include some info badges.
 
 Deprecated
 ==========
@@ -20,19 +19,35 @@ Removed
 
 Fixed
 =====
-- Fixed Scrutinizer coverage error.
 
 Security
 ========
 
+
+[0.1.4] - 2020-03-11
+********************
+
+Changed
+=======
+- Changed README.rst to include some info badges.
+
+Fixed
+=====
+- Fixed `openapi.yml` file name.
+- Fixed Scrutinizer coverage error.
+
+
 [0.1.3] - 2019-08-30
 ********************
+
 Added
 =====
  - Added REST API to choose interfaces for sending LLDP packets.
 
+
 [0.1.2] - 2019-03-15
 ********************
+
 Added
 =====
  - Continuous integration enabled at scrutinizer.
@@ -40,6 +55,7 @@ Added
 Fixed
 =====
  - Fixed some linter issues.
+
 
 [0.1.1] - 2018-04-20
 ********************

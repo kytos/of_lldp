@@ -53,6 +53,12 @@ repository. To install this NApp, run:
 
    $ kytos napps install kytos/of_lldp
 
+############
+Requirements
+############
+
+- kytos/of_core
+
 ######
 Events
 ######

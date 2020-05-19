@@ -7,6 +7,8 @@ All notable changes to the of_lldp NApp will be documented in this file.
 ********************************
 Added
 =====
+- Added support for automated tests and CI with Travis.
+- Added unit tests.
 
 Changed
 =======

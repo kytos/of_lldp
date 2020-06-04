@@ -56,7 +56,9 @@ class Main(KytosNApp):
             interfaces = list(switch.interfaces.values())
             for interface in interfaces:
                 # Interface marked to receive lldp packet
-                if not interface.lldp:
+                # Only send LLDP packet to active interface
+                if(not interface.lldp or not interface.is_active()
+                   or not interface.is_enabled()):
                     continue
                 # Avoid the interface that connects to the controller.
                 if interface.port_number == local_port:

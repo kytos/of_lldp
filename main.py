@@ -183,6 +183,11 @@ class Main(KytosNApp):
                                             'interface_b': interface_b})
             self.controller.buffers.app.put(event_out)
 
+    def notify_lldp_change(self):
+        """Dispatch a KytosEvents to notify changes to the LLDP status."""
+        event_out = KytosEvent(name='kytos/topology.network_status.updated')
+        self.controller.buffers.app.put(event_out)
+
     def shutdown(self):
         """End of the application."""
         log.debug('Shutting down...')
@@ -337,6 +342,7 @@ class Main(KytosNApp):
             else:
                 error_list.append(id_)
         if not error_list:
+            self.notify_lldp_change()
             return jsonify(
                 "All the requested interfaces have been disabled."), 200
 
@@ -362,6 +368,7 @@ class Main(KytosNApp):
             else:
                 error_list.append(id_)
         if not error_list:
+            self.notify_lldp_change()
             return jsonify(
                 "All the requested interfaces have been enabled."), 200
 

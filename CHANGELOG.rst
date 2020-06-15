@@ -8,7 +8,8 @@ All notable changes to the of_lldp NApp will be documented in this file.
 Added
 =====
 - Added support for automated tests and CI with Travis.
-- Added unit tests.
+- Added tags decorator to run tests by type and size.
+- Added unit tests, increasing coverage to 94%.
 
 Changed
 =======

@@ -185,7 +185,7 @@ class Main(KytosNApp):
 
     def notify_lldp_change(self):
         """Dispatch a KytosEvents to notify changes to the LLDP status."""
-        event_out = KytosEvent(name='kytos/topology.network_status.updated')
+        event_out = KytosEvent(name='kytos/of_lldp.network_status.updated')
         self.controller.buffers.app.put(event_out)
 
     def shutdown(self):

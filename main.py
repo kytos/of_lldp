@@ -373,7 +373,7 @@ class Main(KytosNApp):
         return jsonify({msg_error:
                         error_list}), 400
 
-    @rest('v1/time', methods=['GET'])
+    @rest('v1/polling_time', methods=['GET'])
     def get_time(self):
         """Get LLDP polling time."""
         return jsonify({"Polling time in seconds": self.polling_time}), 200

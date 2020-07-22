@@ -364,7 +364,12 @@ class TestMain(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.napp.polling_time, data['polling_time'])
 
-        # test fail
-        data['polling_time'] = 'A'
+    def test_set_time_400(self):
+        """Test fail case the update polling time."""
+        api = get_test_client(self.napp.controller, self.napp)
+
+        url = f'{self.server_name_url}/v1/polling_time'
+
+        data = {'polling_time': 'A'}
         response = api.open(url, method='POST', json=data)
         self.assertEqual(response.status_code, 400)

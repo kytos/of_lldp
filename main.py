@@ -183,9 +183,13 @@ class Main(KytosNApp):
                                             'interface_b': interface_b})
             self.controller.buffers.app.put(event_out)
 
-    def notify_lldp_change(self):
-        """Dispatch a KytosEvents to notify changes to the LLDP status."""
-        event_out = KytosEvent(name='kytos/of_lldp.network_status.updated')
+    def notify_lldp_change(self, state, interface_ids):
+        """Dispatch a KytosEvent to notify changes to the LLDP status."""
+        content = {'attribute': 'LLDP',
+                   'state': state,
+                   'interface_ids': interface_ids}
+        event_out = KytosEvent(name='kytos/of_lldp.network_status.updated',
+                               content=content)
         self.controller.buffers.app.put(event_out)
 
     def shutdown(self):
@@ -329,6 +333,7 @@ class Main(KytosNApp):
     def disable_lldp(self):
         """Disables an interface to receive LLDP packets."""
         interface_ids = self._get_data(request)
+        changed_interfaces = interface_ids
         error_list = []  # List of interfaces that were not activated.
         interface_ids = filter(None, interface_ids)
         interfaces = self._get_interfaces()
@@ -342,7 +347,8 @@ class Main(KytosNApp):
             else:
                 error_list.append(id_)
         if not error_list:
-            self.notify_lldp_change()
+
+            self.notify_lldp_change('disabled', changed_interfaces)
             return jsonify(
                 "All the requested interfaces have been disabled."), 200
 
@@ -355,6 +361,7 @@ class Main(KytosNApp):
     def enable_lldp(self):
         """Enable an interface to receive LLDP packets."""
         interface_ids = self._get_data(request)
+        changed_interfaces = interface_ids
         error_list = []  # List of interfaces that were not activated.
         interface_ids = filter(None, interface_ids)
         interfaces = self._get_interfaces()
@@ -368,7 +375,7 @@ class Main(KytosNApp):
             else:
                 error_list.append(id_)
         if not error_list:
-            self.notify_lldp_change()
+            self.notify_lldp_change('enabled', changed_interfaces)
             return jsonify(
                 "All the requested interfaces have been enabled."), 200
 

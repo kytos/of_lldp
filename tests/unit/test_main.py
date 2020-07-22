@@ -342,3 +342,29 @@ class TestMain(TestCase):
 
         self.assertEqual(disable_response.status_code, 400)
         self.assertEqual(enable_response.status_code, 400)
+
+    def test_get_time(self):
+        """Test get polling time."""
+        api = get_test_client(self.napp.controller, self.napp)
+
+        url = f'{self.server_name_url}/v1/polling_time'
+        response = api.open(url, method='GET')
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_set_time(self):
+        """Test update polling time."""
+        data = {"polling_time": 5}
+
+        api = get_test_client(self.napp.controller, self.napp)
+
+        url = f'{self.server_name_url}/v1/polling_time'
+        response = api.open(url, method='POST', json=data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.napp.polling_time, data['polling_time'])
+
+        # test fail
+        data['polling_time'] = 'A'
+        response = api.open(url, method='POST', json=data)
+        self.assertEqual(response.status_code, 400)

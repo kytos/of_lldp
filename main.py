@@ -378,14 +378,17 @@ class Main(KytosNApp):
         """Get LLDP polling time."""
         return jsonify({"Polling time in seconds": self.polling_time}), 200
 
-    @rest('v1/time/<time_sec>', methods=['POST'])
-    def set_time(self, time_sec):
+    @rest('v1/polling_time', methods=['POST'])
+    def set_time(self):
         """Set LLDP polling time."""
         # pylint: disable=attribute-defined-outside-init
-
         try:
-            self.polling_time = int(time_sec)
+            payload = request.get_json()
+            self.polling_time = int(payload['polling_time'])
             self.execute_as_loop(self.polling_time)
+            log.info("Polling time has been updated,"
+                     "but this change will not be saved permanently.")
             return jsonify("Polling time has been updated."), 200
-        except ValueError:
-            return jsonify("Bad format."), 400
+        except (ValueError, KeyError) as error:
+            msg = f"This operation is not completed: {error}"
+            return jsonify(msg), 400

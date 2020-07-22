@@ -10,6 +10,8 @@ Added
 - Added support for automated tests and CI with Travis.
 - Added tags decorator to run tests by type and size.
 - Added unit tests, increasing coverage to 94%.
+- Added persistence module to store LLDP administrative changes.
+- Added a REST endpoint to change LLDP polling_time at run time.
 
 Changed
 =======

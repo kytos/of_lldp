@@ -24,6 +24,17 @@ Security
 ========
 
 
+[1.0] - 2020-07-23
+******************
+Added
+=====
+- Added persistence module to store LLDP administrative changes.
+- Added a REST endpoint to change LLDP polling_time at run time.
+- Added unit tests, increasing coverage to 94%.
+- Added tags decorator to run tests by type and size.
+- Added support for automated tests and CI with Travis.
+
+
 [0.1.4] - 2020-03-11
 ********************
 

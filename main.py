@@ -375,8 +375,8 @@ class Main(KytosNApp):
 
     @rest('v1/polling_time', methods=['GET'])
     def get_time(self):
-        """Get LLDP polling time."""
-        return jsonify({"Polling time in seconds": self.polling_time}), 200
+        """Get LLDP polling time in seconds."""
+        return jsonify({"polling_time": self.polling_time}), 200
 
     @rest('v1/polling_time', methods=['POST'])
     def set_time(self):

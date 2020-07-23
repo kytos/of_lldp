@@ -401,7 +401,10 @@ class Main(KytosNApp):
         # pylint: disable=attribute-defined-outside-init
         try:
             payload = request.get_json()
-            self.polling_time = abs(int(payload['polling_time']))
+            polling_time = int(payload['polling_time'])
+            if polling_time <= 0:
+                raise ValueError
+            self.polling_time = polling_time
             self.execute_as_loop(self.polling_time)
             log.info("Polling time has been updated to %s"
                      " second(s), but this change will not be saved"

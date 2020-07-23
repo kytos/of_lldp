@@ -403,7 +403,8 @@ class Main(KytosNApp):
             payload = request.get_json()
             polling_time = int(payload['polling_time'])
             if polling_time <= 0:
-                raise ValueError
+                raise ValueError(f"invalid polling_time {polling_time}, "
+                                 "must be greater than zero")
             self.polling_time = polling_time
             self.execute_as_loop(self.polling_time)
             log.info("Polling time has been updated to %s"

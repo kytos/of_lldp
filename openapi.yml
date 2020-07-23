@@ -89,7 +89,7 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/Lista'
-                example: {"Polling time in seconds": 3}
+                example: {"polling_time": 3}
 
     post:
       summary: Set the LLDP polling time.

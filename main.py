@@ -181,6 +181,10 @@ class Main(KytosNApp):
             interface_a = switch_a.get_interface_by_port_no(port_a.value)
             interface_b = switch_b.get_interface_by_port_no(port_b.value)
 
+            # Return if any interface does not exist
+            if not (interface_a and interface_b):
+                return
+
             event_out = KytosEvent(name='kytos/of_lldp.interface.is.nni',
                                    content={'interface_a': interface_a,
                                             'interface_b': interface_b})

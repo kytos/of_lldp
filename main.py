@@ -1,19 +1,15 @@
 """NApp responsible to discover new switches and hosts."""
 import struct
 
+import requests
 from flask import jsonify, request
 from pyof.foundation.basic_types import DPID, UBInt16, UBInt32
 from pyof.foundation.network_types import LLDP, VLAN, Ethernet, EtherType
 from pyof.v0x01.common.action import ActionOutput as AO10
 from pyof.v0x01.common.phy_port import Port as Port10
-from pyof.v0x01.controller2switch.flow_mod import FlowMod as FM10
-from pyof.v0x01.controller2switch.flow_mod import FlowModCommand as FMC
 from pyof.v0x01.controller2switch.packet_out import PacketOut as PO10
 from pyof.v0x04.common.action import ActionOutput as AO13
-from pyof.v0x04.common.flow_instructions import InstructionApplyAction
-from pyof.v0x04.common.flow_match import OxmOfbMatchField, OxmTLV, VlanId
 from pyof.v0x04.common.port import PortNo as Port13
-from pyof.v0x04.controller2switch.flow_mod import FlowMod as FM13
 from pyof.v0x04.controller2switch.packet_out import PacketOut as PO13
 
 from kytos.core import KytosEvent, KytosNApp, log, rest
@@ -109,7 +105,7 @@ class Main(KytosNApp):
                     ethernet.source, ethernet.destination,
                     switch.dpid, interface.port_number)
 
-    @listen_to('kytos/of_core.handshake.completed')
+    @listen_to('kytos/topology.switch.(enabled|disabled)')
     def install_lldp_flow(self, event):
         """Install a flow to send LLDP packets to the controller.
 
@@ -121,19 +117,19 @@ class Main(KytosNApp):
 
         """
         try:
-            of_version = event.content['switch'].connection.protocol.version
+            dpid = event.content['dpid']
+            switch = self.controller.get_switch_by_dpid(dpid)
+            of_version = switch.connection.protocol.version
+
         except AttributeError:
             of_version = None
 
-        flow_mod = self._build_lldp_flow_mod(of_version)
-
-        if flow_mod:
-            name = 'kytos/of_lldp.messages.out.ofpt_flow_mod'
-            content = {'destination': event.content['switch'].connection,
-                       'message': flow_mod}
-
-            event_out = KytosEvent(name=name, content=content)
-            self.controller.buffers.msg_out.put(event_out)
+        flow = self._build_lldp_flow(of_version)
+        if flow:
+            destination = switch.id
+            endpoint = f'{settings.FLOW_MANAGER_URL}/flows/{destination}'
+            data = {'flows': [flow]}
+            requests.post(endpoint, json=data)
 
     @listen_to('kytos/of_core.v0x0[14].messages.in.ofpt_packet_in')
     def notify_uplink_detected(self, event):
@@ -234,52 +230,38 @@ class Main(KytosNApp):
 
         return packet_out
 
-    def _build_lldp_flow_mod(self, version):
-        """Build a FlodMod message to send LLDP to the controller.
+    def _build_lldp_flow(self, version):
+        """Build a Flow message to send LLDP to the controller.
 
         Args:
             version (int): OpenFlow version.
 
         Returns:
-            FlowMod message for the specific given OpenFlow version, if it is
-                supported.
+            Flow dictionary message for the specific given OpenFlow version,
+            if it is supported.
             None if the OpenFlow version is not supported.
 
         """
+        flow = {}
+        match = {}
+        flow['priority'] = settings.FLOW_PRIORITY
+        flow['table_id'] = settings.TABLE_ID
+        match['dl_type'] = EtherType.LLDP
+
+        if self.vlan_id:
+            match['dl_vlan'] = self.vlan_id
+        flow['match'] = match
+
         if version == 0x01:
-            flow_mod = FM10()
-            flow_mod.command = FMC.OFPFC_ADD
-            flow_mod.priority = settings.FLOW_PRIORITY
-            flow_mod.match.dl_type = EtherType.LLDP
-            if self.vlan_id:
-                flow_mod.match.dl_vlan = self.vlan_id
-            flow_mod.actions.append(AO10(port=Port10.OFPP_CONTROLLER))
-
+            flow['actions'] = [{'action_type': 'output',
+                                'port': Port10.OFPP_CONTROLLER}]
         elif version == 0x04:
-            flow_mod = FM13()
-            flow_mod.command = FMC.OFPFC_ADD
-            flow_mod.priority = settings.FLOW_PRIORITY
-
-            match_lldp = OxmTLV()
-            match_lldp.oxm_field = OxmOfbMatchField.OFPXMT_OFB_ETH_TYPE
-            match_lldp.oxm_value = EtherType.LLDP.to_bytes(2, 'big')
-            flow_mod.match.oxm_match_fields.append(match_lldp)
-
-            if self.vlan_id:
-                match_vlan = OxmTLV()
-                match_vlan.oxm_field = OxmOfbMatchField.OFPXMT_OFB_VLAN_VID
-                vlan_value = self.vlan_id | VlanId.OFPVID_PRESENT
-                match_vlan.oxm_value = vlan_value.to_bytes(2, 'big')
-                flow_mod.match.oxm_match_fields.append(match_vlan)
-
-            instruction = InstructionApplyAction()
-            instruction.actions.append(AO13(port=Port13.OFPP_CONTROLLER))
-            flow_mod.instructions.append(instruction)
-
+            flow['actions'] = [{'action_type': 'output',
+                               'port': Port13.OFPP_CONTROLLER}]
         else:
-            flow_mod = None
+            flow = None
 
-        return flow_mod
+        return flow
 
     @staticmethod
     def _unpack_non_empty(desired_class, data):

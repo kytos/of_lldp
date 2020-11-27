@@ -247,7 +247,6 @@ class Main(KytosNApp):
         flow['priority'] = settings.FLOW_PRIORITY
         flow['table_id'] = settings.TABLE_ID
         match['dl_type'] = EtherType.LLDP
-
         if self.vlan_id:
             match['dl_vlan'] = self.vlan_id
         flow['match'] = match
@@ -257,7 +256,7 @@ class Main(KytosNApp):
                                 'port': Port10.OFPP_CONTROLLER}]
         elif version == 0x04:
             flow['actions'] = [{'action_type': 'output',
-                               'port': Port13.OFPP_CONTROLLER}]
+                                'port': Port13.OFPP_CONTROLLER}]
         else:
             flow = None
 

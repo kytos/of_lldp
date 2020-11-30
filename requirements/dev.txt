@@ -7,26 +7,54 @@
 -e git+https://github.com/kytos/kytos.git#egg=kytos
 -e .
 -e git+https://github.com/kytos/python-openflow.git#egg=python-openflow
-astroid==2.2.0            # via pylint
-click==7.0                # via pip-tools
+astroid==2.3.3            # via pylint
+backcall==0.1.0           # via ipython
+click==7.1.1              # via flask, pip-tools
 coverage==5.0.3
+decorator==4.4.2          # via ipython, traitlets
 docopt==0.6.2             # via yala
+docutils==0.16            # via python-daemon
 filelock==3.0.10          # via tox
-isort==4.3.9              # via pylint, yala
-lazy-object-proxy==1.3.1  # via astroid
+flask-cors==3.0.8
+flask-socketio==4.2.1
+flask==1.1.2              # via flask-cors, flask-socketio
+ipython-genutils==0.2.0   # via traitlets
+ipython==7.13.0
+isort==4.3.21              # via pylint, yala
+itsdangerous==1.1.0       # via flask
+janus==0.4.0
+jedi==0.16.0              # via ipython
+jinja2==2.11.1            # via flask
+lazy-object-proxy==1.4.3  # via astroid
+lockfile==0.12.2          # via python-daemon
+markupsafe==1.1.1         # via jinja2
 mccabe==0.6.1             # via pylint
-pip-tools==3.4.0
-pluggy==0.9.0             # via tox
-py==1.8.0                 # via tox
+parso==0.6.2              # via jedi
+pathtools==0.1.2          # via watchdog
+pexpect==4.8.0            # via ipython
+pickleshare==0.7.5        # via ipython
+pip-tools==4.5.1
+pluggy==0.13.1             # via tox
+prompt-toolkit==3.0.5     # via ipython
+ptyprocess==0.6.0         # via pexpect
+py==1.8.1                 # via tox
 pycodestyle==2.5.0        # via yala
-pydocstyle==3.0.0         # via yala
-pylint==2.3.0             # via yala
-pytest==5.4.1             # via pytest
-six==1.12.0               # via astroid, pip-tools, pydocstyle, tox
+pydocstyle==5.1.1         # via yala
+pygments==2.7.1           # via ipython
+pyjwt==1.7.1
+pylint==2.4.4             # via yala
+python-daemon==2.2.4
+python-engineio==3.12.1   # via python-socketio
+python-socketio==4.5.1    # via flask-socketio
+six==1.15.0               # via astroid, flask-cors, pip-tools, pydocstyle, python-engineio, python-socketio, tox, traitlets
 snowballstemmer==1.2.1    # via pydocstyle
 toml==0.10.0              # via tox
-tox==3.7.0
-typed-ast==1.2.0          # via astroid
-virtualenv==16.4.1        # via tox
-wrapt==1.11.1             # via astroid
-yala==1.7.0
+tox==3.14.6
+traitlets==4.3.3          # via ipython
+typed-ast==1.4.1          # via astroid
+virtualenv==20.0.15       # via tox
+watchdog==0.10.2
+wcwidth==0.1.9            # via prompt-toolkit
+werkzeug==1.0.1           # via flask
+wrapt==1.11.2             # via astroid
+yala==2.2.0

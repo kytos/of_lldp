@@ -17,7 +17,7 @@ class TestMain(TestCase):
         self.server_name_url = 'http://127.0.0.1:8181/api/kytos/of_lldp'
 
         patch('kytos.core.helpers.run_on_thread', lambda x: x).start()
-        # pylint: disable=bad-option-value
+        # pylint: disable=bad-option-value, import-outside-toplevel
         from napps.kytos.of_lldp.main import Main
         self.addCleanup(patch.stopall)
 

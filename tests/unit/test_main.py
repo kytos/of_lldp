@@ -62,17 +62,24 @@ class TestMain(TestCase):
         mock_buffer_put.assert_has_calls([call(arg)
                                           for arg in po_args])
 
+    @patch('requests.delete')
     @patch('requests.post')
-    def test_install_lldp_flow(self, mock_request):
-        """Test install_lldp_flow method."""
+    def test_handle_lldp_flows(self, mock_post, mock_delete):
+        """Test handle_lldp_flow method."""
         dpid = "00:00:00:00:00:00:00:01"
         switch = get_switch_mock("00:00:00:00:00:00:00:01", 0x04)
         self.napp.controller.switches = {dpid: switch}
-        event = get_kytos_event_mock(name='kytos/topology.switch.enabled',
-                                     content={'dpid': dpid})
+        event_post = get_kytos_event_mock(name='kytos/topology.switch.enabled',
+                                          content={'dpid': dpid})
 
-        self.napp.install_lldp_flow(event)
-        mock_request.assert_called()
+        event_del = get_kytos_event_mock(name='kytos/topology.switch.disabled',
+                                         content={'dpid': dpid})
+
+        self.napp.handle_lldp_flows(event_post)
+        mock_post.assert_called()
+
+        self.napp.handle_lldp_flows(event_del)
+        mock_delete.assert_called()
 
     @patch('kytos.core.buffers.KytosEventBuffer.put')
     @patch('napps.kytos.of_lldp.main.KytosEvent')

@@ -106,10 +106,12 @@ class Main(KytosNApp):
                     switch.dpid, interface.port_number)
 
     @listen_to('kytos/topology.switch.(enabled|disabled)')
-    def install_lldp_flow(self, event):
-        """Install a flow to send LLDP packets to the controller.
+    def handle_lldp_flows(self, event):
+        """Install or remove flows in a switch.
 
-        The proactive flow is installed whenever a switch connects.
+        Install a flow to send LLDP packets to the controller. The proactive
+        flow is installed whenever a switch is enabled. If the switch is
+        disabled the flow is removed.
 
         Args:
             event (:class:`~kytos.core.events.KytosEvent`):
@@ -129,7 +131,10 @@ class Main(KytosNApp):
             destination = switch.id
             endpoint = f'{settings.FLOW_MANAGER_URL}/flows/{destination}'
             data = {'flows': [flow]}
-            requests.post(endpoint, json=data)
+            if event.name == 'kytos/topology.switch.enabled':
+                requests.post(endpoint, json=data)
+            else:
+                requests.delete(endpoint, json=data)
 
     @listen_to('kytos/of_core.v0x0[14].messages.in.ofpt_packet_in')
     def notify_uplink_detected(self, event):

@@ -23,6 +23,16 @@ Fixed
 Security
 ========
 
+[1.0.1] - 2020-12-23
+********************
+
+Changed
+=======
+
+- Changed setup.py to alert when a test fails on Travis. 
+- Change `kytos/of_lldp` to install and remove LLDP flows 
+  using `kytos/flow_manager` endpoint.
+
 
 [1.0] - 2020-07-23
 ******************

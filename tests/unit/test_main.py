@@ -17,7 +17,7 @@ class TestMain(TestCase):
         self.server_name_url = 'http://127.0.0.1:8181/api/kytos/of_lldp'
 
         patch('kytos.core.helpers.run_on_thread', lambda x: x).start()
-        # pylint: disable=bad-option-value
+        # pylint: disable=bad-option-value, import-outside-toplevel
         from napps.kytos.of_lldp.main import Main
         self.addCleanup(patch.stopall)
 
@@ -62,27 +62,24 @@ class TestMain(TestCase):
         mock_buffer_put.assert_has_calls([call(arg)
                                           for arg in po_args])
 
-    @patch('kytos.core.buffers.KytosEventBuffer.put')
-    @patch('napps.kytos.of_lldp.main.KytosEvent')
-    @patch('napps.kytos.of_lldp.main.Main._build_lldp_flow_mod')
-    def test_install_lldp_flow(self, *args):
-        """Test install_lldp_flow method."""
-        (mock_build_lldp_packet_out, mock_kytos_event, mock_buffer_put) = args
-
+    @patch('requests.delete')
+    @patch('requests.post')
+    def test_handle_lldp_flows(self, mock_post, mock_delete):
+        """Test handle_lldp_flow method."""
+        dpid = "00:00:00:00:00:00:00:01"
         switch = get_switch_mock("00:00:00:00:00:00:00:01", 0x04)
-        event = get_kytos_event_mock(name='kytos/of_core.handshake.completed',
-                                     content={'switch': switch})
+        self.napp.controller.switches = {dpid: switch}
+        event_post = get_kytos_event_mock(name='kytos/topology.switch.enabled',
+                                          content={'dpid': dpid})
 
-        mock_build_lldp_packet_out.side_effect = ['flow_mod', None]
-        mock_kytos_event.return_value = 'ofpt_flow_mod'
+        event_del = get_kytos_event_mock(name='kytos/topology.switch.disabled',
+                                         content={'dpid': dpid})
 
-        self.napp.install_lldp_flow(event)
+        self.napp.handle_lldp_flows(event_post)
+        mock_post.assert_called()
 
-        switch.connection = None
-
-        self.napp.install_lldp_flow(event)
-
-        mock_buffer_put.assert_called_once_with('ofpt_flow_mod')
+        self.napp.handle_lldp_flows(event_del)
+        mock_delete.assert_called()
 
     @patch('kytos.core.buffers.KytosEventBuffer.put')
     @patch('napps.kytos.of_lldp.main.KytosEvent')
@@ -165,61 +162,44 @@ class TestMain(TestCase):
 
         self.assertIsNone(packet_out14)
 
-    @patch('napps.kytos.of_lldp.main.InstructionApplyAction')
-    @patch('napps.kytos.of_lldp.main.OxmTLV')
-    @patch('napps.kytos.of_lldp.main.FM13')
-    @patch('napps.kytos.of_lldp.main.FM10')
-    @patch('napps.kytos.of_lldp.main.AO13')
-    @patch('napps.kytos.of_lldp.main.AO10')
-    def test_build_lldp_flow_mod(self, *args):
-        """Test _build_lldp_flow_mod method."""
-        (mock_ao10, mock_ao13, mock_fm10, mock_fm13, mock_oxm_tlv,
-         mock_instruction) = args
+    @patch('napps.kytos.of_lldp.main.settings')
+    @patch('napps.kytos.of_lldp.main.EtherType')
+    @patch('napps.kytos.of_lldp.main.Port13')
+    @patch('napps.kytos.of_lldp.main.Port10')
+    def test_build_lldp_flow(self, *args):
+        """Test _build_lldp_flow method."""
+        (mock_v0x01_port, mock_v0x04_port, mock_ethertype,
+         mock_settings) = args
+        self.napp.vlan_id = None
+        mock_v0x01_port.OFPP_CONTROLLER = 123
+        mock_v0x04_port.OFPP_CONTROLLER = 1234
 
-        ao10 = MagicMock()
-        fm10 = MagicMock()
-        fm10.actions = []
-        ao13 = MagicMock()
-        fm13 = MagicMock()
-        fm13.match.oxm_match_fields = []
-        fm13.instructions = []
-        instruction = MagicMock()
-        instruction.actions = []
+        mock_ethertype.LLDP = 10
+        mock_settings.FLOW_VLAN_VID = None
+        mock_settings.FLOW_PRIORITY = 1500
+        mock_settings.TABLE_ID = 0
 
-        match_lldp = MagicMock()
-        match_lldp.oxm_field = 5
-        match_lldp.oxm_value = 'ether_type'
+        flow = {}
+        match = {}
+        flow['priority'] = 1500
+        flow['table_id'] = 0
+        match['dl_type'] = 10
 
-        match_vlan = MagicMock()
-        match_vlan.oxm_field = 6
-        match_vlan.oxm_value = 'vlan_value'
+        flow['match'] = match
+        expected_flow_v0x01 = flow.copy()
+        expected_flow_v0x04 = flow.copy()
 
-        oxm_tlvs = [match_lldp, match_vlan]
+        expected_flow_v0x01['actions'] = [{'action_type': 'output',
+                                           'port': 123}]
 
-        mock_ao10.return_value = ao10
-        mock_fm10.return_value = fm10
-        mock_ao13.return_value = ao13
-        mock_fm13.return_value = fm13
-        mock_instruction.return_value = instruction
-        mock_oxm_tlv.side_effect = oxm_tlvs
+        expected_flow_v0x04['actions'] = [{'action_type': 'output',
+                                           'port': 1234}]
 
-        flow_mod10 = self.napp._build_lldp_flow_mod(0x01)
-        flow_mod13 = self.napp._build_lldp_flow_mod(0x04)
-        flow_mod14 = self.napp._build_lldp_flow_mod(0x05)
+        flow_mod10 = self.napp._build_lldp_flow(0x01)
+        flow_mod13 = self.napp._build_lldp_flow(0x04)
 
-        self.assertEqual(flow_mod10.command, 0)
-        self.assertEqual(flow_mod10.priority, 1000)
-        self.assertEqual(flow_mod10.match.dl_type, 0x88CC)
-        self.assertEqual(flow_mod10.match.dl_vlan, 3799)
-        self.assertEqual(flow_mod10.actions, [ao10])
-
-        self.assertEqual(flow_mod13.command, 0)
-        self.assertEqual(flow_mod13.priority, 1000)
-        self.assertEqual(flow_mod13.match.oxm_match_fields, oxm_tlvs)
-        self.assertEqual(flow_mod13.instructions[0], instruction)
-        self.assertEqual(flow_mod13.instructions[0].actions, [ao13])
-
-        self.assertIsNone(flow_mod14)
+        self.assertDictEqual(flow_mod10, expected_flow_v0x01)
+        self.assertDictEqual(flow_mod13, expected_flow_v0x04)
 
     def test_unpack_non_empty(self):
         """Test _unpack_non_empty method."""

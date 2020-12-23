@@ -23,6 +23,14 @@ Fixed
 Security
 ========
 
+[1.1] - 2020-12-23
+******************
+Changed
+=======
+- Make ``of_lldp`` install and remove LLDP flows 
+  through the ``flow_manager`` NApp.
+- Changed setup.py to alert when a test fails on Travis. 
+
 
 [1.0] - 2020-07-23
 ******************

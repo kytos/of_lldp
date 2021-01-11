@@ -58,6 +58,7 @@ Requirements
 ############
 
 - kytos/of_core
+- kytos/flow_manager
 
 ######
 Events
@@ -78,6 +79,34 @@ Content
     { 'message': <object> # instance of python-openflow PacketIn message
       'source': <object>, # instance of kytos.core.switch.Connection class
     }
+
+kytos/topology.switch.enabled
+=============================
+Listen when a switch was enabled. This event is used to indicate when to
+install LLDP flows through Kytos/flow_manager.
+
+Content
+-------
+
+.. code-block:: python3
+
+   {
+     'dpid': <switch.id>
+   }
+
+kytos/topology.switch.disabled
+==============================
+Listen when a switch was disabled. This event is used to indicate when to
+remove LLDP flows through Kytos/flow_manager.
+
+Content
+-------
+
+.. code-block:: python3
+
+   {
+     'dpid': <switch.id>
+   }
 
 ********
 Generate

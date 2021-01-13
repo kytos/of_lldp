@@ -83,7 +83,7 @@ Content
 kytos/topology.switch.enabled
 =============================
 Listen when a switch was enabled. This event is used to indicate when to
-install LLDP flows through Kytos/flow_manager.
+install LLDP flows through kytos/flow_manager.
 
 Content
 -------
@@ -97,7 +97,7 @@ Content
 kytos/topology.switch.disabled
 ==============================
 Listen when a switch was disabled. This event is used to indicate when to
-remove LLDP flows through Kytos/flow_manager.
+remove LLDP flows through kytos/flow_manager.
 
 Content
 -------

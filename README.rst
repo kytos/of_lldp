@@ -59,6 +59,7 @@ Requirements
 
 - kytos/of_core
 - kytos/flow_manager
+- kytos/topology
 
 ######
 Events

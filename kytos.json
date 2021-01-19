@@ -4,7 +4,7 @@
   "name": "of_lldp",
   "description": "Discover network-to-network interfaces (NNIs) using the LLDP protocol.",
   "version": "1.1",
-  "napp_dependencies": ["kytos/of_core", "kytos/flow_manager"],
+  "napp_dependencies": ["kytos/of_core", "kytos/flow_manager", "kytos/topology"],
   "license": "MIT",
   "url": "https://github.com/kytos/of_lldp.git",
   "tags": ["openflow", "lldp", "work-in-progress"]

@@ -24,8 +24,8 @@ paths:
                 example:           # Child of media type because we use $ref above
                   # Properties of a referenced object
                   interfaces: ["00:00:00:00:00:00:00:04:65534","00:00:00:00:00:00:00:03:65534"]
-  
-  
+
+
   /v1/interfaces/enable/:
     post:
       summary: Enable interfaces to receive lldp packet.
@@ -50,7 +50,7 @@ paths:
                   $ref: '#/components/schemas/Lista'
           '400':
             description: No interfaces were found.
-  
+
   /v1/interfaces/disable/:
     post:
       summary: Disable Interfaces
@@ -81,7 +81,7 @@ paths:
       summary: Get LLDP Polling time.
       description: Get LLDP polling time in seconds.
       operationId: time_lldp
-      
+
       responses:
           '200':
             description: OK
@@ -92,11 +92,11 @@ paths:
                 example: {"polling_time": 3}
 
     post:
-      summary: Set the LLDP polling time.
-      description: Update LLDP polling time.
+      summary: Update the LLDP polling time at runtime.
+      description: Update LLDP polling time at runtime, this change is not persistent.
       operationId: update_polling_time
       requestBody:
-        description: Update polling time
+        description: The new LLDP polling time in seconds.
         required: true
         content:
           application/json:
@@ -125,4 +125,3 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Lista'
-   

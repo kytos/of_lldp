@@ -23,13 +23,25 @@ Fixed
 Security
 ========
 
+[1.2] - 2021-04-16
+******************
+Added
+=====
+- Added to the `kytos.json` and` README.rst` file NApp `kytos/topology`
+  as a dependency.
+
+Changed
+=======
+- Changed the description of the REST endpoint ``polling_time`` in the API
+  documentation, describing that the change made at runtime is not persistent.
+
 [1.1] - 2020-12-23
 ******************
 Changed
 =======
-- Make ``of_lldp`` install and remove LLDP flows 
+- Make ``of_lldp`` install and remove LLDP flows
   through the ``flow_manager`` NApp.
-- Changed setup.py to alert when a test fails on Travis. 
+- Changed setup.py to alert when a test fails on Travis.
 
 
 [1.0] - 2020-07-23

@@ -23,17 +23,15 @@ Fixed
 Security
 ========
 
-[1.2] - 2021-04-16
-******************
-Added
-=====
-- Added to the `kytos.json` and` README.rst` file NApp `kytos/topology`
-  as a dependency.
 
+[1.1.1] - 2021-04-22
+********************
 Changed
 =======
 - Changed the description of the REST endpoint ``polling_time`` in the API
   documentation, describing that the change made at runtime is not persistent.
+- Added ``kytos/topology`` as a dependency.
+
 
 [1.1] - 2020-12-23
 ******************
